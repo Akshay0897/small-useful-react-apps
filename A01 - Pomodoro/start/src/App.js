@@ -1,23 +1,39 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 
-export default function App() {
+function useInterval(delay, callBackFn) {
 
-  const [counter, setcounter] = React.useState(0);
-  const [start, setStart] = useState(false);
-  
+  const fnRef = React.useRef(null);
+
   useEffect(() => {
+    fnRef.current = callBackFn;
+  })
 
-    const id = setInterval(() => setcounter((count) => count + 1), 1000);
+  const tick = () => fnRef.current();
 
-    if(!start){
+  useEffect(() => {
+  
+    const id = setInterval(tick, delay);
+
+    if (!delay) {
       clearInterval(id);
     }
 
     return () => {
       clearInterval(id);
     };
-  }, [start]);
+  }, [delay]);
+}
+
+export default function App() {
+
+  const [counter, setcounter] = useState(0)
+  const [delay, setDelay] = React.useState(null);
+
+  useInterval(
+    delay,
+    () => setcounter(counter => counter + 1)
+  );
 
   return (
     <div className="app">
@@ -28,8 +44,10 @@ export default function App() {
       </div>
 
       <div className="buttons">
-        <button onClick={() => setStart(true)}>Start</button>
-        <button onClick={() => setStart(false)}>Stop</button>
+        <label htmlFor="delay">delay</label>
+        <input value={delay} onChange={(e) => delay && setDelay(e.target.value)} id="delay"></input>
+        <button onClick={() => setDelay(1000)}>Start</button>
+        <button onClick={() => setDelay(null)}>Stop</button>
         <button onClick={() => setcounter(0)}>Reset</button>
       </div>
     </div>
